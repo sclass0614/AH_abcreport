@@ -1,0 +1,1796 @@
+<!DOCTYPE html>
+<html lang="ko">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>우리집DCC 활동 일지</title>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="style.css">
+    <!-- Supabase 라이브러리 추가 -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <!-- 커스텀 Supabase 클라이언트 -->
+    <script src="supabase.js"></script>
+</head>
+
+<body>
+    <!-- 인쇄 버튼 -->
+    <div class="button-container no-print">
+        <div class="control-panel">
+            <div id="reportInfoHeader">Report Entry</div>
+            <div id="reportEntryContent">
+                <div class="date-container">
+                    <input type="date" id="commonDate" class="date-input-common" placeholder="날짜 선택">
+                </div>
+                <div class="input-group">
+                    <input type="text" id="startTime1" class="time-input" placeholder="시작시간" readonly>
+                    <input type="text" id="endTime1" class="time-input" placeholder="종료시간" readonly>
+                    <button class="report-button" id="report1Button">1차 보고서</button>
+                </div>
+                <div class="input-group">
+                    <input type="text" id="startTime2" class="time-input" placeholder="시작시간" readonly>
+                    <input type="text" id="endTime2" class="time-input" placeholder="종료시간" readonly>
+                    <button class="report-button" id="report2Button">2차 보고서</button>
+                </div>
+                <div class="input-group">
+                    <input type="text" id="startTime3" class="time-input" placeholder="시작시간" readonly>
+                    <input type="text" id="endTime3" class="time-input" placeholder="종료시간" readonly>
+                    <button class="report-button" id="report3Button">3차 보고서</button>
+                </div>
+                <div class="input-group">
+                    <input type="text" id="startTime4" class="time-input" placeholder="시작시간" readonly>
+                    <input type="text" id="endTime4" class="time-input" placeholder="종료시간" readonly>
+                    <button class="report-button" id="report4Button">4차 보고서</button>
+                </div>
+                <div class="input-group">
+                    <input type="text" id="startTime5" class="time-input" placeholder="시작시간" readonly>
+                    <input type="text" id="endTime5" class="time-input" placeholder="종료시간" readonly>
+                    <button class="report-button" id="report5Button">5차 보고서</button>
+                </div>
+            </div>
+        </div>
+        <button class="print-button" id="printButton" onclick="window.print()">인쇄하기</button>
+    </div>
+
+    <!-- 시간 선택 모달 -->
+    <div id="timeModal" class="modal">
+        <div class="modal-content">
+            <span class="close">&times;</span>
+            <h3 id="modalTitle">시간 선택</h3>
+            <div id="timeList" class="time-list"></div>
+        </div>
+    </div>
+
+    <!-- 직원명 입력 모달 -->
+    <div id="teacherModal" class="modal">
+        <div class="modal-content">
+            <span class="close" id="teacherModalClose">&times;</span>
+            <h3 id="teacherModalTitle">직원명 입력</h3>
+            <div class="teacher-input-container">
+                <input type="text" id="teacherInput" class="teacher-input" placeholder="직원명 이름 입력">
+                <button id="saveTeacherBtn" class="save-button">저장</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 내용 입력 모달 -->
+    <div id="contentModal" class="modal">
+        <div class="modal-content content-modal-content">
+            <span class="close" id="contentModalClose">&times;</span>
+            <h3 id="contentModalTitle">내용 입력</h3>
+            <div class="content-input-container">
+                <textarea id="contentInput" class="content-input" placeholder="내용을 입력하세요" rows="5"></textarea>
+                <button id="saveContentBtn" class="save-button">저장</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 로딩 표시기 -->
+    <div id="loadingIndicator" class="loading-indicator">
+        <div class="loading-spinner"></div>
+    </div>
+
+    <!-- 첫 번째 페이지 -->
+    <div class="page">
+        <div class="report-title" id="reportTitle">우리집 활동 일지</div>
+
+        <div class="report-content">
+            <!-- 기본 정보 섹션 -->
+            <div class="section-title">일지 기본 정보</div>
+            <div class="info-section">
+                <table id="info-table" class="info-table">
+                    <thead>
+                        <tr>
+                            <th>날짜</th>
+                            <th>시작시간</th>
+                            <th>종료시간</th>
+                            <th>소요시간</th>
+                            <th>참석회원 수</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>우측에서 선택하세요.</td>
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="section-title">작성자 확인</div>
+            <div class="approval-section">
+                <div class="teacher-container">
+                    <table id="teacher-table" class="teacher-table">
+                        <thead>
+                            <tr>
+                                <th>작성자1</th>
+                                <th>작성자2</th>
+                                <th>작성자3</th>
+                                <th>작성자4</th>
+                                <th>작성자5</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>김재환</td>
+                                <td></td>
+                                <td></td>
+                                <td></td>
+                                <td></td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+                <div class="approval-container">
+                    <div class="approval-box">
+                        <div class="approval-title">결재</div>
+                        <div class="approval-name" style="font-family: 'Noto Sans KR', 'Malgun Gothic', sans-serif;">시설장
+                            김재환</div>
+                        <div class="approval-signature" style="background-color: white;"></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 1. 목표 및 과정 -->
+            <div class="section">
+                <div class="section-title">1. 목표 및 과정</div>
+                <table id="goal-table" class="goal-table">
+                    <thead>
+                        <tr>
+                            <th>목표</th>
+                            <th>내용</th>
+                            <th>과정</th>
+                            <th>내용</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>1</td>
+                            <td id="goal-content-1" class="editable-content">다양한 생활영역의 프로그램을 제공하여 맞춤형 활동에 참여할 수 있도록 한다.
+                            </td>
+                            <td>1</td>
+                            <td id="process-content-1" class="editable-content">매일 아침 어르신이 사랑방활동을 확인하고, 하고 싶은 활동을 선택한다.
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>2</td>
+                            <td id="goal-content-2" class="editable-content">예측가능한 하루일과를 통해 어르신 개개인의 루틴(routine)을 확립한다.
+                            </td>
+                            <td>2</td>
+                            <td id="process-content-2" class="editable-content">선택한 활동에 자신의 이름표를 걸어 놓는다.</td>
+                        </tr>
+                        <tr>
+                            <td>3</td>
+                            <td id="goal-content-3" class="editable-content">하루일과를 스스로 계획하고 선택함으로써, 어르신의 자기결정권을 존중한다.
+                            </td>
+                            <td>3</td>
+                            <td id="process-content-3" class="editable-content">활동시간이 되면, 자신이 선택한 활동에 참여한다.</td>
+                        </tr>
+                        <tr>
+                            <td>4</td>
+                            <td id="goal-content-4" class="editable-content"></td>
+                            <td>4</td>
+                            <td id="process-content-4" class="editable-content"></td>
+                        </tr>
+                        <tr>
+                            <td>5</td>
+                            <td id="goal-content-5" class="editable-content"></td>
+                            <td>5</td>
+                            <td id="process-content-5" class="editable-content"></td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- 2. 활동별 계획 -->
+            <div class="section">
+                <div class="section-title">2. 활동별 계획</div>
+                <table id="plan-table" class="plan-table">
+                    <thead>
+                        <tr>
+                            <th>활동명</th>
+                            <th>직원명</th>
+                            <th>생활영역</th>
+                            <th>장소</th>
+                            <th>준비물품</th>
+                            <th>내용및특이사항</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>로딩중...</td>
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- 3. 활동별 평가(평균) -->
+            <div class="section">
+                <div class="section-title">3. 활동별 평가(평균)</div>
+                <table id="evaluation-table" class="evaluation-table">
+                    <thead>
+                        <tr>
+                            <th>활동명</th>
+                            <th>생활코드</th>
+                            <th>소분류명</th>
+                            <th>참여도</th>
+                            <th>수행도</th>
+                            <th>만족도</th>
+                            <th>활동기록</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>로딩중...</td>
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                        </tr>
+                    </tbody>
+                </table>
+
+                <!-- 총평균점수 테이블 -->
+                <table id="average-table" class="evaluation-table">
+                    <tbody>
+                        <tr class="average-row">
+                            <td
+                                style="width: 200px !important; min-width: 200px !important; max-width: 200px !important;">
+                                총 평균점수</td>
+                            <td style="width: 30px !important; min-width: 30px !important; max-width: 30px !important;">
+                                5.00</td>
+                            <td style="width: 30px !important; min-width: 30px !important; max-width: 30px !important;">
+                                5.00</td>
+                            <td style="width: 30px !important; min-width: 30px !important; max-width: 30px !important;">
+                                5.00</td>
+                            <td style="width: auto !important;"></td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- 4. 개인별 활동 -->
+            <div class="section">
+                <div class="section-title">4. 개인별 활동</div>
+                <table id="individual-table" class="individual-table">
+                    <thead>
+                        <tr>
+                            <th>이름</th>
+                            <th>생활코드</th>
+                            <th>활동명</th>
+                            <th>참여시간</th>
+                            <th>참여도</th>
+                            <th>수행도</th>
+                            <th>만족도</th>
+                            <th>관찰</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>로딩중...</td>
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="footer">-끝-</div>
+            <div class="page-number"></div>
+        </div>
+    </div>
+
+    <!-- 네트워크 상태 표시기도 삭제 -->
+
+    <script>
+        /**
+         * 시간 문자열을 분 단위로 변환하는 함수
+         * @param {string} timeStr - 시간 문자열 (HH:MM 또는 HHMM 형식)
+         * @returns {number} - 분 단위로 변환된 시간 (예: 09:30 -> 570분)
+         */
+        function convertTimeToMinutes(timeStr) {
+            if (!timeStr) return 0;
+
+            let hours = 0, minutes = 0;
+
+            if (timeStr.includes(':')) {
+                // HH:MM 형식인 경우
+                const parts = timeStr.split(':');
+                hours = parseInt(parts[0] || 0);
+                minutes = parseInt(parts[1] || 0);
+            } else {
+                // HHMM 형식인 경우
+                hours = parseInt(timeStr.substring(0, 2) || 0);
+                minutes = parseInt(timeStr.substring(2) || 0);
+            }
+
+            return hours * 60 + minutes;
+        }
+
+        /**
+         * 시간 문자열을 HH:MM 형식으로 변환하는 함수
+         * @param {string} timeStr - 시간 문자열 (HHMM 형식)
+         * @returns {string} - HH:MM 형식으로 변환된 시간 (예: 0930 -> 09:30)
+         */
+        function formatTimeString(timeStr) {
+            if (!timeStr) return '';
+
+            // 이미 HH:MM 형식인 경우 그대로 반환
+            if (timeStr.includes(':')) {
+                return timeStr;
+            }
+
+            // HHMM 형식인 경우 HH:MM으로 변환
+            const hours = timeStr.substring(0, 2);
+            const minutes = timeStr.substring(2);
+            return `${hours}:${minutes}`;
+        }
+
+        /**
+         * 날짜와 시간으로 필터링하는 함수
+         * @param {Array} data - 필터링할 데이터 배열
+         * @param {number} dateField - 날짜 필드 인덱스
+         * @param {number} startTimeField - 시작 시간 필드 인덱스
+         * @param {number} endTimeField - 종료 시간 필드 인덱스
+         * @param {string} targetDate - 필터링할 날짜
+         * @returns {Array} - 필터링된 데이터 배열
+         */
+        function filterDataByDateAndTime(data, dateField, startTimeField, endTimeField, targetDate) {
+            const minStartTime = 9 * 60; // 09:00
+            const maxEndTime = 18 * 60; // 18:00
+
+            return data.filter(row => {
+                const date = row[dateField];
+                const startTotalMins = convertTimeToMinutes(row[startTimeField]);
+                const endTotalMins = convertTimeToMinutes(row[endTimeField]);
+
+                return date === targetDate &&
+                    startTotalMins >= minStartTime &&
+                    endTotalMins <= maxEndTime;
+            });
+        }
+
+        /**
+         * 평균 계산 함수
+         * @param {Array} arr - 평균을 계산할 숫자 배열
+         * @returns {string} - 소수점 둘째 자리까지 계산된 평균값 문자열
+         */
+        function calculateAverage(arr) {
+            if (arr.length === 0) return "0.00";
+            const sum = arr.reduce((a, b) => a + b, 0);
+            return (sum / arr.length).toFixed(2);
+        }
+
+        /**
+         * 테이블 행에 호버 효과 추가 함수
+         * @param {NodeList} rows - 테이블 행 노드 리스트
+         */
+        function addHoverEffectToRows(rows) {
+            rows.forEach(row => {
+                row.addEventListener('mouseenter', function () {
+                    this.style.backgroundColor = '#e8f5e9';
+                    this.style.transition = 'background-color 0.3s ease';
+                });
+
+                row.addEventListener('mouseleave', function () {
+                    this.style.backgroundColor = '';
+                });
+            });
+        }
+
+        /**
+         * 모달 관련 변수
+         */
+        let currentTimeInput = null;
+        let timeOptions = [];
+
+        /**
+         * 모달 열기 함수
+         * @param {HTMLElement} timeInput - 시간 입력 필드
+         * @param {string} title - 모달 제목
+         * @param {Array} options - 시간 옵션 배열
+         */
+        function openTimeModal(timeInput, title, options) {
+            const modal = document.getElementById('timeModal');
+            const modalTitle = document.getElementById('modalTitle');
+            const timeList = document.getElementById('timeList');
+
+            currentTimeInput = timeInput;
+            timeOptions = options;
+
+            // 모달 제목 설정
+            modalTitle.textContent = title;
+
+            // 시간 목록 생성
+            timeList.innerHTML = '';
+            options.forEach(time => {
+                const timeItem = document.createElement('div');
+                timeItem.className = 'time-item';
+                timeItem.textContent = time;
+                timeItem.addEventListener('click', () => {
+                    currentTimeInput.value = time;
+                    closeTimeModal();
+                });
+                timeList.appendChild(timeItem);
+            });
+
+            // 모달 표시
+            modal.style.display = 'block';
+        }
+
+        /**
+         * 모달 닫기 함수
+         */
+        function closeTimeModal() {
+            const modal = document.getElementById('timeModal');
+            modal.style.display = 'none';
+        }
+
+        /**
+         * 날짜별 시간 데이터 캐시
+         */
+        const timeDataCache = {};
+        
+        /**
+         * 날짜별 계획 데이터 캐시
+         */
+        const planDataCache = {};
+        
+        /**
+         * 날짜별 일지 데이터 캐시
+         */
+        const journalDataCache = {};
+        
+        /**
+         * 날짜에 따른 시간 데이터 가져오기
+         * @param {string} date - 선택된 날짜
+         */
+        function getTimeDataForDate(date) {
+            if (!date) return;
+            
+            // 시간 입력 필드 초기화 및 로딩 표시
+            for (let i = 1; i <= 5; i++) {
+                const startTimeInput = document.getElementById(`startTime${i}`);
+                const endTimeInput = document.getElementById(`endTime${i}`);
+                
+                if (startTimeInput) {
+                    startTimeInput.value = '로딩 중...';
+                    startTimeInput.disabled = true;
+                    startTimeInput.style.backgroundColor = '#f5f5f5';
+                    startTimeInput.style.color = '#999';
+                }
+                
+                if (endTimeInput) {
+                    endTimeInput.value = '로딩 중...';
+                    endTimeInput.disabled = true;
+                    endTimeInput.style.backgroundColor = '#f5f5f5';
+                    endTimeInput.style.color = '#999';
+                }
+            }
+            
+            // 날짜를 yyyymmdd 형식으로 변환
+            const formattedDate = formatDateToYYYYMMDD(date);
+            
+            try {
+                // 로딩 표시 띄우기
+                showLoading();
+                
+                // 캐시된 계획 데이터가 있는지 확인
+                if (planDataCache[formattedDate]) {
+                    // 캐시된 데이터에서 시간 정보 추출
+                    const cacheData = planDataCache[formattedDate];
+                    
+                    // 고유한 시작 시간과 종료 시간 추출
+                    const startTimes = [...new Set(cacheData.map(row => row.시작시간))].filter(Boolean);
+                    const endTimes = [...new Set(cacheData.map(row => row.종료시간))].filter(Boolean);
+                    
+                    // 형식화된 시간 배열 준비
+                    const formattedStartTimes = startTimes.map(time => 
+                        formatTimeString(time));
+                    
+                    const formattedEndTimes = endTimes.map(time => 
+                        formatTimeString(time));
+                    
+                    // 시간 입력 필드 설정
+                    setupTimeInputs(formattedStartTimes, formattedEndTimes);
+                    
+                    // 로딩 표시 제거
+                    hideLoading();
+                } else {
+                    // 캐시된 데이터가 없으면 서버에서 가져와 캐싱
+                    getPlanData(formattedDate)
+                        .then(data => {
+                            // 데이터 캐싱
+                            planDataCache[formattedDate] = data;
+                            
+                            // 고유한 시작 시간과 종료 시간 추출
+                            const startTimes = [...new Set(data.map(row => row.시작시간))].filter(Boolean);
+                            const endTimes = [...new Set(data.map(row => row.종료시간))].filter(Boolean);
+                            
+                            // 형식화된 시간 배열 준비
+                            const formattedStartTimes = startTimes.map(time => 
+                                formatTimeString(time));
+                            
+                            const formattedEndTimes = endTimes.map(time => 
+                                formatTimeString(time));
+                            
+                            if (formattedStartTimes.length > 0 || formattedEndTimes.length > 0) {
+                                // 시간 입력 필드 설정
+                                setupTimeInputs(formattedStartTimes, formattedEndTimes);
+                            } else {
+                                // 데이터가 없으면 입력 필드 비우기
+                                clearTimeInputs();
+                                showCustomAlert('데이터 없음', '선택한 날짜에 대한 데이터가 없습니다.', 'info');
+                            }
+                            
+                            // 로딩 표시 제거
+                            hideLoading();
+                        })
+                        .catch(error => {
+                            // 오류 처리
+                            clearTimeInputs();
+                            hideLoading();
+                            showCustomAlert('오류 발생', '데이터를 불러오는 중 오류가 발생했습니다.', 'error');
+                            console.error('시간 데이터 로드 오류:', error);
+                        });
+                }
+            } catch (e) {
+                clearTimeInputs();
+                hideLoading();
+                showCustomAlert('오류 발생', '서버 함수 호출 중 오류가 발생했습니다.', 'error');
+                console.error('시간 데이터 서버 호출 오류:', e);
+            }
+        }
+
+        /**
+         * 시간 입력 필드 설정 함수
+         * @param {Array} startTimes - 시작 시간 배열
+         * @param {Array} endTimes - 종료 시간 배열
+         */
+        function setupTimeInputs(startTimes, endTimes) {
+            // 모든 시간 입력 필드 설정
+            for (let i = 1; i <= 5; i++) {
+                const startTimeInput = document.getElementById(`startTime${i}`);
+                const endTimeInput = document.getElementById(`endTime${i}`);
+                
+                if (!startTimeInput || !endTimeInput) continue;
+                
+                // 이전 이벤트 리스너 제거 (중복 방지)
+                const newStartTimeInput = startTimeInput.cloneNode(true);
+                const newEndTimeInput = endTimeInput.cloneNode(true);
+                startTimeInput.parentNode.replaceChild(newStartTimeInput, startTimeInput);
+                endTimeInput.parentNode.replaceChild(newEndTimeInput, endTimeInput);
+                
+                // 입력 필드 상태 초기화
+                newStartTimeInput.value = '';
+                newEndTimeInput.value = '';
+                newStartTimeInput.style.backgroundColor = '';
+                newEndTimeInput.style.backgroundColor = '';
+                newStartTimeInput.style.color = '';
+                newEndTimeInput.style.color = '';
+                
+                // 시간 목록이 없으면 비활성화 상태 유지
+                const hasStartTimes = startTimes && startTimes.length > 0;
+                const hasEndTimes = endTimes && endTimes.length > 0;
+                
+                newStartTimeInput.disabled = !hasStartTimes;
+                newEndTimeInput.disabled = !hasEndTimes;
+                
+                if (!hasStartTimes) {
+                    newStartTimeInput.placeholder = '시간 없음';
+                } else {
+                    newStartTimeInput.placeholder = '시작 시간';
+                }
+                
+                if (!hasEndTimes) {
+                    newEndTimeInput.placeholder = '시간 없음';
+                } else {
+                    newEndTimeInput.placeholder = '종료 시간';
+                }
+
+                // 시작 시간 입력 필드 이벤트 리스너 설정
+                if (hasStartTimes) {
+                    newStartTimeInput.addEventListener('click', function() {
+                        openTimeModal(this, '시작 시간 선택', startTimes);
+                    });
+                }
+
+                // 종료 시간 입력 필드 이벤트 리스너 설정
+                if (hasEndTimes) {
+                    newEndTimeInput.addEventListener('click', function() {
+                        openTimeModal(this, '종료 시간 선택', endTimes);
+                    });
+                }
+            }
+        }
+
+        /**
+         * 시간 입력 필드 초기화 함수
+         */
+        function clearTimeInputs() {
+            for (let i = 1; i <= 5; i++) {
+                const startTimeInput = document.getElementById(`startTime${i}`);
+                const endTimeInput = document.getElementById(`endTime${i}`);
+                
+                if (startTimeInput) {
+                    startTimeInput.value = '';
+                    startTimeInput.disabled = true;
+                    startTimeInput.style.backgroundColor = '';
+                    startTimeInput.style.color = '';
+                }
+                
+                if (endTimeInput) {
+                    endTimeInput.value = '';
+                    endTimeInput.disabled = true;
+                    endTimeInput.style.backgroundColor = '';
+                    endTimeInput.style.color = '';
+                }
+            }
+        }
+
+        /**
+         * 문서 로드 완료 시 실행되는 함수
+         */
+        document.addEventListener('DOMContentLoaded', function () {
+            // 테이블 행에 호버 효과 추가
+            const tableRows = document.querySelectorAll('tbody tr');
+            addHoverEffectToRows(tableRows);
+
+            // 섹션에 애니메이션 효과 적용
+            const sections = document.querySelectorAll('.section');
+            sections.forEach((section, index) => {
+                section.style.opacity = '0';
+                section.style.transform = 'translateY(20px)';
+
+                setTimeout(() => {
+                    section.style.transition = 'opacity 0.5s ease, transform 0.5s ease';
+                    section.style.opacity = '1';
+                    section.style.transform = 'translateY(0)';
+                }, 100 * (index + 1));
+            });
+
+            // 모달 닫기 버튼 이벤트 리스너 설정
+            const closeBtn = document.querySelector('.close');
+            closeBtn.addEventListener('click', closeTimeModal);
+
+            // 모달 외부 클릭 시 닫기
+            window.addEventListener('click', function (event) {
+                const modal = document.getElementById('timeModal');
+                const teacherModal = document.getElementById('teacherModal');
+                const contentModal = document.getElementById('contentModal');
+                if (event.target === modal) {
+                    closeTimeModal();
+                }
+                if (event.target === teacherModal) {
+                    closeTeacherModal();
+                }
+                if (event.target === contentModal) {
+                    closeContentModal();
+                }
+            });
+
+            // 직원명 모달 닫기 버튼 이벤트 리스너 설정
+            const teacherCloseBtn = document.getElementById('teacherModalClose');
+            teacherCloseBtn.addEventListener('click', closeTeacherModal);
+
+            // 직원명 저장 버튼 이벤트 리스너 설정
+            const saveTeacherBtn = document.getElementById('saveTeacherBtn');
+            saveTeacherBtn.addEventListener('click', saveTeacher);
+
+            // 내용 모달 닫기 버튼 이벤트 리스너 설정
+            const contentCloseBtn = document.getElementById('contentModalClose');
+            contentCloseBtn.addEventListener('click', closeContentModal);
+
+            // 내용 저장 버튼 이벤트 리스너 설정
+            const saveContentBtn = document.getElementById('saveContentBtn');
+            saveContentBtn.addEventListener('click', saveContent);
+
+            // 직원명 테이블 셀 클릭 이벤트 설정
+            setupTeacherTableCells();
+
+            // 목표 및 과정 테이블 내용 셀 클릭 이벤트 설정
+            setupContentCells();
+
+            // 저장된 데이터 불러오기
+            loadSavedData();
+
+            // 공통 날짜 선택 이벤트 리스너 설정
+            const commonDateInput = document.getElementById('commonDate');
+
+            // 초기 상태에서 시간 입력 필드 비활성화
+            for (let i = 1; i <= 5; i++) {
+                const startTimeInput = document.getElementById(`startTime${i}`);
+                const endTimeInput = document.getElementById(`endTime${i}`);
+                startTimeInput.disabled = true;
+                endTimeInput.disabled = true;
+            }
+
+            // 날짜 선택 이벤트 리스너
+            commonDateInput.addEventListener('change', function () {
+                // 날짜를 yyyymmdd 형식으로 변환
+                const formattedDate = formatDateToYYYYMMDD(this.value);
+                
+                // info-table의 날짜 열 업데이트
+                const infoTable = document.getElementById('info-table');
+                const infoTbody = infoTable.querySelector('tbody');
+                const firstRow = infoTbody.querySelector('tr');
+
+                // 기존 행이 없으면 새로운 행 생성
+                if (!firstRow) {
+                    infoTbody.innerHTML = `
+            <tr>
+              <td>${formattedDate}</td>
+              <td></td>
+              <td></td>
+              <td></td>
+              <td id="memberCount">0</td>
+            </tr>
+          `;
+                } else {
+                    // 기존 행이 있으면 날짜만 업데이트
+                    firstRow.cells[0].textContent = formattedDate;
+                }
+
+                // 시간 데이터 가져오기
+                getTimeDataForDate(this.value);
+            });
+
+            // 버튼 이벤트 리스너 설정
+            setupButtonEventListeners();
+        });
+
+        /**
+         * 전체 데이터 미리 로드하는 함수
+         */
+        function preloadAllData() {
+            console.log('전체 데이터 미리 로드 중...');
+            showLoading();
+
+            google.script.run
+                .withSuccessHandler(function (jsonData) {
+                    try {
+                        hideLoading();
+                        if (!jsonData) {
+                            console.log('미리 로드할 데이터가 없습니다.');
+                            return;
+                        }
+
+                        const data = JSON.parse(jsonData);
+
+                        // 날짜별로 데이터 그룹화
+                        const dateGroups = {};
+                        data.forEach(row => {
+                            const date = row[1]; // B열: 날짜
+                            if (!date) return;
+
+                            if (!dateGroups[date]) {
+                                dateGroups[date] = [];
+                            }
+                            dateGroups[date].push(row);
+                        });
+
+                        // 각 날짜별로 시간 데이터 캐싱
+                        Object.keys(dateGroups).forEach(date => {
+                            const rows = dateGroups[date];
+                            const startTimes = [...new Set(rows.map(row => row[2]))].filter(Boolean);
+                            const endTimes = [...new Set(rows.map(row => row[3]))].filter(Boolean);
+
+                            // 캐시에 저장
+                            timeDataCache[date] = { startTimes, endTimes };
+                        });
+
+                        console.log('전체 데이터 미리 로드 완료:', Object.keys(timeDataCache).length, '개의 날짜');
+
+                    } catch (error) {
+                        hideLoading();
+                        console.error('전체 데이터 미리 로드 중 오류 발생:', error);
+                    }
+                })
+                .withFailureHandler(function (error) {
+                    hideLoading();
+                    console.error('전체 데이터 요청 중 오류 발생:', error);
+                })
+                .getJournalData(); // 구글 스크립트의 getJournalData 함수 호출
+        }
+
+        /**
+         * 커스텀 알림 표시 함수
+         * @param {string} title - 알림 제목
+         * @param {string} message - 알림 메시지
+         * @param {string} type - 알림 유형 (info, success, warning, error)
+         */
+        function showCustomAlert(title, message, type = 'warning') {
+            const customAlert = document.getElementById('customAlert');
+            const alertTitle = document.getElementById('alertTitle');
+            const alertMessage = document.getElementById('alertMessage');
+            const alertHeader = document.querySelector('.custom-alert-header');
+            const alertIcon = alertHeader.querySelector('i');
+
+            // 알림 유형에 따른 아이콘과 색상 설정
+            switch (type) {
+                case 'info':
+                    alertIcon.className = 'fas fa-info-circle';
+                    alertHeader.style.backgroundColor = '#2196F3';
+                    break;
+                case 'success':
+                    alertIcon.className = 'fas fa-check-circle';
+                    alertHeader.style.backgroundColor = '#4CAF50';
+                    break;
+                case 'warning':
+                    alertIcon.className = 'fas fa-exclamation-triangle';
+                    alertHeader.style.backgroundColor = '#FF9800';
+                    break;
+                case 'error':
+                    alertIcon.className = 'fas fa-times-circle';
+                    alertHeader.style.backgroundColor = '#F44336';
+                    break;
+                default:
+                    alertIcon.className = 'fas fa-exclamation-circle';
+                    alertHeader.style.backgroundColor = '#4CAF50';
+            }
+
+
+            alertTitle.textContent = title;
+            alertMessage.textContent = message;
+
+            customAlert.style.display = 'flex';
+        }
+
+        /**
+         * 커스텀 알림 닫기 함수
+         */
+        function closeAlert() {
+            const customAlert = document.getElementById('customAlert');
+            customAlert.style.display = 'none';
+        }
+
+        /**
+         * 버튼 이벤트 리스너 설정 함수
+         */
+        function setupButtonEventListeners() {
+            // 인쇄 버튼에 효과 추가
+            const printButton = document.getElementById('printButton');
+            if (printButton) {
+                printButton.addEventListener('mouseenter', function () {
+                    this.style.transform = 'translateY(-2px)';
+                    this.style.boxShadow = '0 4px 8px rgba(0,0,0,0.1)';
+                });
+
+                printButton.addEventListener('mouseleave', function () {
+                    this.style.transform = 'translateY(0)';
+                    this.style.boxShadow = '0 2px 4px rgba(0,0,0,0.1)';
+                });
+            }
+
+            // 보고서 버튼 이벤트 리스너 설정
+            for (let i = 1; i <= 5; i++) {
+                const reportButton = document.getElementById(`report${i}Button`);
+                if (reportButton) {
+                    reportButton.addEventListener('click', function () {
+                        const dateInput = document.getElementById('commonDate');
+                        const startTimeInput = document.getElementById(`startTime${i}`);
+                        const endTimeInput = document.getElementById(`endTime${i}`);
+
+                        // 입력 필드 검증
+                        if (!dateInput.value) {
+                            showCustomAlert('날짜 선택 필요', '보고서를 생성하기 위해 날짜를 선택해주세요.', 'warning');
+                            dateInput.focus();
+                            return;
+                        }
+
+                        if (!startTimeInput.value) {
+                            showCustomAlert('시작 시간 선택 필요', '보고서를 생성하기 위해 시작 시간을 선택해주세요.', 'warning');
+                            startTimeInput.focus();
+                            return;
+                        }
+
+                        if (!endTimeInput.value) {
+                            showCustomAlert('종료 시간 선택 필요', '보고서를 생성하기 위해 종료 시간을 선택해주세요.', 'warning');
+                            endTimeInput.focus();
+                            return;
+                        }
+
+                        // 시작 시간과 종료 시간 비교
+                        const startMinutes = convertTimeToMinutes(startTimeInput.value);
+                        const endMinutes = convertTimeToMinutes(endTimeInput.value);
+
+                        if (startMinutes >= endMinutes) {
+                            showCustomAlert('시간 설정 오류', '종료 시간은 시작 시간보다 늦어야 합니다.', 'error');
+                            endTimeInput.focus();
+                            return;
+                        }
+
+                        // 보고서 로드 함수 호출
+                        loadReport(i, dateInput.value, startTimeInput.value, endTimeInput.value);
+                    });
+                }
+            }
+            
+            // 보고서 버튼 호버 효과 추가
+            const reportButtons = document.querySelectorAll('.report-button');
+            reportButtons.forEach(button => {
+                button.addEventListener('mouseenter', function () {
+                    this.style.transform = 'translateY(-2px)';
+                    this.style.boxShadow = '0 4px 8px rgba(0,0,0,0.1)';
+                    this.style.backgroundColor = '#45a049';
+                });
+
+                button.addEventListener('mouseleave', function () {
+                    this.style.transform = 'translateY(0)';
+                    this.style.boxShadow = '0 2px 4px rgba(0,0,0,0.1)';
+                    this.style.backgroundColor = '#4CAF50';
+                });
+            });
+        }
+
+        /**
+         * 보고서 로드 함수
+         * @param {number} reportIndex - 보고서 인덱스 (1-4)
+         * @param {string} date - 선택된 날짜
+         * @param {string} startTime - 선택된 시작 시간
+         * @param {string} endTime - 선택된 종료 시간
+         */
+        function loadReport(reportIndex, date, startTime, endTime) {
+            // 로딩 표시
+            showLoading();
+
+            // 제목 업데이트
+            const reportTitle = document.getElementById('reportTitle');
+            reportTitle.textContent = `우리집 활동 일지(${reportIndex}차)`;
+
+            // 테이블 요소 및 tbody 요소 가져오기
+            const tables = {
+                info: document.getElementById('info-table'),
+                individual: document.getElementById('individual-table'),
+                evaluation: document.getElementById('evaluation-table'),
+                average: document.getElementById('average-table'),
+                plan: document.getElementById('plan-table')
+            };
+
+            const tbodies = {
+                info: tables.info.querySelector('tbody'),
+                individual: tables.individual.querySelector('tbody'),
+                evaluation: tables.evaluation.querySelector('tbody'),
+                average: tables.average.querySelector('tbody'),
+                plan: tables.plan.querySelector('tbody')
+            };
+
+            // 기본 정보 테이블 업데이트
+            updateInfoTable(tbodies.info, date, startTime, endTime);
+
+            // 로딩 메시지 표시
+            tbodies.individual.innerHTML = '<tr><td colspan="8" style="text-align: center;">데이터를 불러오는 중입니다...</td></tr>';
+            tbodies.evaluation.innerHTML = '<tr><td colspan="7" style="text-align: center;">데이터를 불러오는 중입니다...</td></tr>';
+            tbodies.plan.innerHTML = '<tr><td colspan="6" style="text-align: center;">데이터를 불러오는 중입니다...</td></tr>';
+
+            // average-table 초기화
+            tbodies.average.innerHTML = `
+        <tr class="average-row">
+          <td style="width: 200px !important; min-width: 200px !important; max-width: 200px !important;">총평균점수</td>
+          <td style="width: 30px !important; min-width: 30px !important; max-width: 30px !important;">0.00</td>
+          <td style="width: 30px !important; min-width: 30px !important; max-width: 30px !important;">0.00</td>
+          <td style="width: 30px !important; min-width: 30px !important; max-width: 30px !important;">0.00</td>
+          <td style="width: auto !important;"></td>
+        </tr>
+      `;
+
+            // 계획 데이터 로드
+            loadPlanDataWithParams(tbodies.plan, date, startTime, endTime);
+
+            // 개인별 활동 데이터 로드
+            loadJournalDataWithParams(tbodies.individual, tbodies.evaluation, tbodies.average, date, startTime, endTime);
+        }
+
+        /**
+         * 기본 정보 테이블 업데이트 함수
+         * @param {HTMLElement} infoTbody - 기본 정보 테이블의 tbody 요소
+         * @param {string} date - 선택된 날짜
+         * @param {string} startTime - 선택된 시작 시간
+         * @param {string} endTime - 선택된 종료 시간
+         */
+        function updateInfoTable(infoTbody, date, startTime, endTime) {
+            // 시간 계산 (종료시간 - 시작시간)
+            const startTotalMins = convertTimeToMinutes(startTime);
+            const endTotalMins = convertTimeToMinutes(endTime);
+            const durationMins = endTotalMins - startTotalMins;
+            
+            // 날짜를 yyyymmdd 형식으로 변환
+            const formattedDate = formatDateToYYYYMMDD(date);
+
+            // info-table 업데이트
+            infoTbody.innerHTML = `
+<tr>
+  <td>${formattedDate}</td>
+  <td>${formatTimeString(startTime)}</td>
+  <td>${formatTimeString(endTime)}</td>
+  <td>${durationMins}분</td>
+  <td id="memberCount">0</td>
+</tr>
+`;
+        }
+
+        /**
+         * 계획 데이터를 로드하는 함수 (파라미터 추가)
+         * @param {HTMLElement} planTbody - 계획 테이블의 tbody 요소
+         * @param {string} date - 선택된 날짜
+         * @param {string} startTime - 선택된 시작 시간
+         * @param {string} endTime - 선택된 종료 시간
+         */
+        function loadPlanDataWithParams(planTbody, date, startTime, endTime) {
+            // date를 yyyymmdd 형식으로 변환
+            const formattedDate = formatDateToYYYYMMDD(date);
+            
+            // 테이블에 로딩 표시
+            planTbody.innerHTML = '<tr><td colspan="6" style="text-align: center; font-weight: bold; color: blue;">데이터를 불러오는 중입니다...</td></tr>';
+            
+            // 이미 캐시된 데이터가 있는지 확인
+            const loadPlanData = () => {
+                if (planDataCache[formattedDate]) {
+                    // 캐시된 데이터가 있으면 시간 범위로 필터링하여 사용
+                    const cacheData = planDataCache[formattedDate];
+                    processPlanData(filterPlanDataByTimeRange(cacheData, startTime, endTime));
+                } else {
+                    // 캐시된 데이터가 없으면 서버에서 가져와 캐싱 후 사용
+                    getPlanData(formattedDate)
+                        .then(data => {
+                            // 데이터 캐싱
+                            planDataCache[formattedDate] = data;
+                            // 시간 범위로 필터링하여 처리
+                            processPlanData(filterPlanDataByTimeRange(data, startTime, endTime));
+                        })
+                        .catch(error => {
+                            planTbody.innerHTML = `<tr><td colspan="6" style="text-align: center;">계획 데이터를 불러오는 중 오류가 발생했습니다: ${error}</td></tr>`;
+                            hideLoading();
+                        });
+                }
+            };
+            
+            // 시간 범위로 계획 데이터 필터링 함수
+            const filterPlanDataByTimeRange = (data, startTimeStr, endTimeStr) => {
+                // 시작 시간과 종료 시간을 분으로 변환
+                const targetStartMinutes = convertTimeToMinutes(startTimeStr);
+                const targetEndMinutes = convertTimeToMinutes(endTimeStr);
+                
+                // 시간 범위로 필터링
+                return data.filter(row => {
+                    // 시간을 분으로 변환하여 비교
+                    const rowStartMinutes = convertTimeToMinutes(row.시작시간);
+                    const rowEndMinutes = convertTimeToMinutes(row.종료시간);
+                    
+                    // 시간 범위가 겹치는 경우 포함
+                    return (
+                        (rowStartMinutes >= targetStartMinutes && rowStartMinutes < targetEndMinutes) ||
+                        (rowEndMinutes > targetStartMinutes && rowEndMinutes <= targetEndMinutes) ||
+                        (rowStartMinutes <= targetStartMinutes && rowEndMinutes >= targetEndMinutes)
+                    );
+                });
+            };
+            
+            // 필터링된 계획 데이터 처리 함수
+            const processPlanData = (filteredPlanData) => {
+                try {
+                    // 테이블 내용 초기화
+                    planTbody.innerHTML = '';
+                    
+                    // 필터링된 데이터가 없는 경우
+                    if (filteredPlanData.length === 0) {
+                        planTbody.innerHTML = '<tr><td colspan="6" style="text-align: center;">해당 조건에 맞는 계획 데이터가 없습니다.</td></tr>';
+                        hideLoading();
+                        return;
+                    }
+
+                    // plan-table 업데이트
+                    filteredPlanData.forEach((row) => {
+                        const activityName = row.활동명 || ''; 
+                        const manager = row.직원명 || '';
+                        const codeRaw = row.생활영역;
+                        const code = codeRaw ? codeRaw.split('-')[0] : '';
+                        const place = row.장소 || '';
+                        const preparation = row.준비물품 || '';
+                        const details = row.내용및특이사항 || '';
+
+                        // 새 행 생성
+                        const tr = document.createElement('tr');
+                        tr.innerHTML = `
+                            <td>${activityName}</td>
+                            <td>${manager}</td>
+                            <td>${code}</td>
+                            <td>${place}</td>
+                            <td>${preparation}</td>
+                            <td>${details}</td>
+                        `;
+
+                        // 테이블에 행 추가
+                        planTbody.appendChild(tr);
+                    });
+
+                    // 테이블 행에 호버 효과 추가
+                    const planTableRows = planTbody.querySelectorAll('tr');
+                    addHoverEffectToRows(planTableRows);
+                } catch (error) {
+                    planTbody.innerHTML = `<tr><td colspan="6" style="text-align: center;">계획 데이터 처리 중 오류가 발생했습니다: ${error.message}</td></tr>`;
+                    hideLoading();
+                }
+            };
+            
+            // 계획 데이터 로드 실행
+            loadPlanData();
+        }
+
+        /**
+         * 개인별 활동 데이터를 로드하는 함수 (파라미터 추가)
+         * @param {HTMLElement} individualTbody - 개인별 활동 테이블의 tbody 요소
+         * @param {HTMLElement} evaluationTbody - 평가 테이블의 tbody 요소
+         * @param {HTMLElement} averageTbody - 평균 테이블의 tbody 요소
+         * @param {string} date - 선택된 날짜
+         * @param {string} startTime - 선택된 시작 시간
+         * @param {string} endTime - 선택된 종료 시간
+         */
+        function loadJournalDataWithParams(individualTbody, evaluationTbody, averageTbody, date, startTime, endTime) {
+            // date를 yyyymmdd 형식으로 변환
+            const formattedDate = formatDateToYYYYMMDD(date);
+            
+            // 테이블에 로딩 표시
+            individualTbody.innerHTML = '<tr><td colspan="8" style="text-align: center; font-weight: bold; color: blue;">데이터를 불러오는 중입니다...</td></tr>';
+            evaluationTbody.innerHTML = '<tr><td colspan="7" style="text-align: center; font-weight: bold; color: blue;">데이터를 불러오는 중입니다...</td></tr>';
+            
+            // 캐시된 일지 데이터가 있는지 확인하고 데이터 처리 진행
+            const processJournalData = (journalData) => {
+                try {
+                    // 시간 범위로 필터링
+                    const filteredJournalData = filterDataByTimeRange(journalData, startTime, endTime);
+                    
+                    // 데이터가 없는 경우
+                    if (filteredJournalData.length === 0) {
+                        individualTbody.innerHTML = '<tr><td colspan="8" style="text-align: center;">해당 조건에 맞는 데이터가 없습니다.</td></tr>';
+                        evaluationTbody.innerHTML = '<tr><td colspan="7" style="text-align: center;">해당 조건에 맞는 데이터가 없습니다.</td></tr>';
+                        
+                        // 활동 기록은 계획 데이터에서 가져오므로 계속 진행
+                        loadActivityRecords();
+                        return;
+                    }
+                    
+                    // 참석회원 수 계산 (중복 없는 회원번호 수)
+                    const uniqueMembers = new Set(filteredJournalData.map(row => row.회원번호));
+                    document.getElementById('memberCount').textContent = uniqueMembers.size;
+                    
+                    // 테이블 업데이트
+                    updateIndividualTable(filteredJournalData, individualTbody);
+                    const scoreData = updateEvaluationTable(filteredJournalData, evaluationTbody);
+                    updateAverageTable(scoreData, averageTbody);
+                    
+                    // 테이블 행에 호버 효과 추가
+                    const tableRows = document.querySelectorAll('tbody tr');
+                    addHoverEffectToRows(tableRows);
+                    
+                    // 활동 기록 로드
+                    loadActivityRecords();
+                } catch (error) {
+                    individualTbody.innerHTML = `<tr><td colspan="8" style="text-align: center;">데이터 처리 중 오류가 발생했습니다: ${error.message}</td></tr>`;
+                    evaluationTbody.innerHTML = `<tr><td colspan="7" style="text-align: center;">데이터 처리 중 오류가 발생했습니다: ${error.message}</td></tr>`;
+                    hideLoading();
+                }
+            };
+            
+            // 캐시된 일지 데이터가 있는지 확인
+            if (journalDataCache[formattedDate]) {
+                // 캐시된 데이터를 사용
+                processJournalData(journalDataCache[formattedDate]);
+            } else {
+                // 캐시된 데이터가 없으면 서버에서 가져와 캐싱 후 사용
+                getJournalData(formattedDate)
+                    .then(data => {
+                        // 데이터 캐싱
+                        journalDataCache[formattedDate] = data;
+                        // 처리
+                        processJournalData(data);
+                    })
+                    .catch(error => {
+                        individualTbody.innerHTML = `<tr><td colspan="8" style="text-align: center;">데이터를 불러오는 중 오류가 발생했습니다: ${error}</td></tr>`;
+                        evaluationTbody.innerHTML = `<tr><td colspan="7" style="text-align: center;">데이터를 불러오는 중 오류가 발생했습니다: ${error}</td></tr>`;
+                        hideLoading();
+                    });
+            }
+            
+            // 시간 범위로 데이터 필터링 함수
+            function filterDataByTimeRange(data, startTimeStr, endTimeStr) {
+                // 시작 시간과 종료 시간을 분으로 변환
+                const targetStartMinutes = convertTimeToMinutes(startTimeStr);
+                const targetEndMinutes = convertTimeToMinutes(endTimeStr);
+                
+                // 시간 범위로 필터링
+                return data.filter(row => {
+                    // 시간을 분으로 변환하여 비교
+                    const rowStartMinutes = convertTimeToMinutes(row.시작시간);
+                    const rowEndMinutes = convertTimeToMinutes(row.종료시간);
+                    
+                    // 시간 범위가 겹치는 경우 포함
+                    return (
+                        (rowStartMinutes >= targetStartMinutes && rowStartMinutes < targetEndMinutes) ||
+                        (rowEndMinutes > targetStartMinutes && rowEndMinutes <= targetEndMinutes) ||
+                        (rowStartMinutes <= targetStartMinutes && rowEndMinutes >= targetEndMinutes)
+                    );
+                });
+            }
+            
+            // 활동 기록 로드 함수
+            function loadActivityRecords() {
+                // 캐시된 계획 데이터가 있는지 확인
+                if (planDataCache[formattedDate]) {
+                    // 캐시된 데이터를 사용
+                    const filteredPlanData = filterDataByTimeRange(planDataCache[formattedDate], startTime, endTime);
+                    processActivityRecords(filteredPlanData);
+                } else {
+                    // 캐시된 데이터가 없으면 서버에서 가져와서 캐싱
+                    getPlanData(formattedDate)
+                        .then(data => {
+                            // 데이터 캐싱
+                            planDataCache[formattedDate] = data;
+                            // 시간 범위로 필터링하여 처리
+                            const filteredPlanData = filterDataByTimeRange(data, startTime, endTime);
+                            processActivityRecords(filteredPlanData);
+                        })
+                        .catch(error => {
+                            console.error('활동 기록 로드 중 오류:', error);
+                            hideLoading();
+                        });
+                }
+            }
+            
+            // 활동 기록 처리 함수
+            function processActivityRecords(planData) {
+                try {
+                    // 활동기록 추가
+                    const activityRecordsMap = new Map();
+                    
+                    // 활동명 및 활동기록 추출하여 맵에 저장
+                    planData.forEach(row => {
+                        const planActivityName = row.활동명;
+                        const planRecord = row.활동기록;
+                        
+                        if (!activityRecordsMap.has(planActivityName)) {
+                            activityRecordsMap.set(planActivityName, new Set());
+                        }
+                        if (planRecord) {
+                            activityRecordsMap.get(planActivityName).add(planRecord);
+                        }
+                    });
+
+                    // evaluation-table에 활동기록 추가
+                    const evaluationRows = evaluationTbody.querySelectorAll('tr');
+                    evaluationRows.forEach(row => {
+                        const activityNameCell = row.querySelector('td:first-child');
+                        if (activityNameCell) {
+                            const activityName = activityNameCell.textContent;
+                            const records = activityRecordsMap.get(activityName) || new Set();
+                            const recordsText = Array.from(records).join('<br>');
+                            const lastCell = row.querySelector('td:last-child');
+                            if (lastCell) {
+                                lastCell.innerHTML = recordsText;
+                            }
+                        }
+                    });
+                } catch (error) {
+                    console.error('활동 기록 처리 중 오류:', error);
+                } finally {
+                    // 로딩 표시기 숨김
+                    hideLoading();
+                }
+            }
+            
+            /**
+             * 개인별 활동 테이블 업데이트 함수
+             * @param {Array} filteredData - 필터링된 데이터 배열
+             * @param {HTMLElement} individualTbody - 개인별 활동 테이블의 tbody 요소
+             */
+            function updateIndividualTable(filteredData, individualTbody) {
+                // 테이블 내용 초기화
+                individualTbody.innerHTML = '';
+                
+                filteredData.forEach((row) => {
+                    const name = row.회원명 || '';
+                    const codeRaw = row.코드;
+                    const code = codeRaw ? codeRaw.split('-')[0] : '';
+                    const activityName = row.활동명 || '';
+                    
+                    // 시간 계산 (종료시간 - 시작시간)
+                    const startTotalMins = convertTimeToMinutes(row.시작시간);
+                    const endTotalMins = convertTimeToMinutes(row.종료시간);
+                    const durationMins = endTotalMins - startTotalMins;
+                    
+                    const participation = row.참여도 || '';
+                    const performance = row.수행도 || '';
+                    const satisfaction = row.만족도 || '';
+                    const observations = row.관찰사항 || '';
+                    
+                    // 새 행 생성
+                    const tr = document.createElement('tr');
+                    tr.innerHTML = `
+                        <td>${name}</td>
+                        <td>${code}</td>
+                        <td>${activityName}</td>
+                        <td>${durationMins > 0 ? durationMins + '분' : ''}</td>
+                        <td>${participation}</td>
+                        <td>${performance}</td>
+                        <td>${satisfaction}</td>
+                        <td>${observations}</td>
+                    `;
+                    
+                    // 테이블에 행 추가
+                    individualTbody.appendChild(tr);
+                });
+            }
+            
+            /**
+             * 평가 테이블 업데이트 함수
+             * @param {Array} filteredData - 필터링된 데이터 배열
+             * @param {HTMLElement} evaluationTbody - 평가 테이블의 tbody 요소
+             * @returns {Object} - 총 점수 데이터 객체
+             */
+            function updateEvaluationTable(filteredData, evaluationTbody) {
+                // 테이블 내용 초기화
+                evaluationTbody.innerHTML = '';
+                
+                // 총 평균 계산을 위한 변수 초기화
+                let totalParticipationScores = [];
+                let totalPerformanceScores = [];
+                let totalSatisfactionScores = [];
+                
+                // 활동명별 데이터 그룹화
+                const activityMap = new Map();
+                filteredData.forEach(row => {
+                    const activityName = row.활동명;
+                    const code = row.코드;
+                    
+                    // 문자열을 숫자로 변환
+                    const participation = parseFloat(row.참여도);
+                    const performance = parseFloat(row.수행도);
+                    const satisfaction = parseFloat(row.만족도);
+                    
+                    if (!activityMap.has(activityName)) {
+                        activityMap.set(activityName, {
+                            codes: new Set(),
+                            participations: [],
+                            performances: [],
+                            satisfactions: []
+                        });
+                    }
+                    const activityData = activityMap.get(activityName);
+                    activityData.codes.add(code);
+                    
+                    // NaN 체크를 통해 유효한 숫자만 배열에 추가
+                    if (!isNaN(participation)) {
+                        activityData.participations.push(participation);
+                        totalParticipationScores.push(participation);
+                    }
+                    if (!isNaN(performance)) {
+                        activityData.performances.push(performance);
+                        totalPerformanceScores.push(performance);
+                    }
+                    if (!isNaN(satisfaction)) {
+                        activityData.satisfactions.push(satisfaction);
+                        totalSatisfactionScores.push(satisfaction);
+                    }
+                });
+                
+                // evaluation-table 업데이트
+                activityMap.forEach((data, activityName) => {
+                    const codes = Array.from(data.codes).map(code => code ? code.split('-') : ['', '']);
+                    const codePart1 = codes.map(parts => parts[0] || '').join('<br>');
+                    const codePart2 = codes.map(parts => parts[1] || '').join('<br>');
+                    
+                    const avgParticipation = calculateAverage(data.participations);
+                    const avgPerformance = calculateAverage(data.performances);
+                    const avgSatisfaction = calculateAverage(data.satisfactions);
+                    
+                    const tr = document.createElement('tr');
+                    tr.innerHTML = `
+                    <td>${activityName}</td>
+                    <td>${codePart1}</td>
+                    <td>${codePart2}</td>
+                    <td>${avgParticipation}</td>
+                    <td>${avgPerformance}</td>
+                    <td>${avgSatisfaction}</td>
+                    <td></td> <!-- 활동기록은 이후 단계에서 추가 -->
+                  `;
+                    evaluationTbody.appendChild(tr);
+                });
+                
+                return {
+                    totalParticipationScores,
+                    totalPerformanceScores,
+                    totalSatisfactionScores
+                };
+            }
+            
+            /**
+             * 평균 테이블 업데이트 함수
+             * @param {Object} scoreData - 총 점수 데이터 객체
+             * @param {HTMLElement} averageTbody - 평균 테이블의 tbody 요소
+             */
+            function updateAverageTable(scoreData, averageTbody) {
+                const { totalParticipationScores, totalPerformanceScores, totalSatisfactionScores } = scoreData;
+                
+                // 총 평균 계산
+                const totalAvgParticipation = calculateAverage(totalParticipationScores);
+                const totalAvgPerformance = calculateAverage(totalPerformanceScores);
+                const totalAvgSatisfaction = calculateAverage(totalSatisfactionScores);
+                
+                // average-table 업데이트
+                averageTbody.innerHTML = `
+                  <tr class="average-row">
+                    <td style="width: 200px !important; min-width: 200px !important; max-width: 200px !important;">총평균점수</td>
+                    <td style="width: 30px !important; min-width: 30px !important; max-width: 30px !important;">${totalAvgParticipation}</td>
+                    <td style="width: 30px !important; min-width: 30px !important; max-width: 30px !important;">${totalAvgPerformance}</td>
+                    <td style="width: 30px !important; min-width: 30px !important; max-width: 30px !important;">${totalAvgSatisfaction}</td>
+                    <td style="width: auto !important;"></td>
+                  </tr>
+                `;
+            }
+        }
+
+        /**
+         * 로딩 표시기 표시 함수
+         */
+        function showLoading() {
+            document.getElementById('loadingIndicator').style.display = 'flex';
+        }
+
+        /**
+         * 로딩 표시기 숨김 함수
+         */
+        function hideLoading() {
+            document.getElementById('loadingIndicator').style.display = 'none';
+        }
+
+        /**
+         * 직원명 테이블 셀 설정 함수
+         */
+        function setupTeacherTableCells() {
+            const teacherTable = document.getElementById('teacher-table');
+            const teacherCells = teacherTable.querySelectorAll('tbody td');
+
+            teacherCells.forEach((cell, index) => {
+                cell.addEventListener('click', function () {
+                    openTeacherModal(this, index);
+                });
+            });
+        }
+
+        /**
+         * 현재 선택된 직원명 셀
+         */
+        let currentTeacherCell = null;
+
+        /**
+         * 직원명 모달 열기 함수
+         * @param {HTMLElement} cell - 클릭된 셀 요소
+         * @param {number} index - 셀 인덱스
+         */
+        function openTeacherModal(cell, index) {
+            const modal = document.getElementById('teacherModal');
+            const modalTitle = document.getElementById('teacherModalTitle');
+            const teacherInput = document.getElementById('teacherInput');
+
+            currentTeacherCell = cell;
+
+            // 모달 제목 설정
+            const titles = ['작성자1', '작성자2', '작성자3', '작성자4', '작성자5', '결재자'];
+            modalTitle.textContent = `${titles[index]} 입력`;
+
+            // 현재 값 입력 필드에 설정
+            teacherInput.value = cell.textContent || '';
+
+            // 모달 표시
+            modal.style.display = 'block';
+
+            // 입력 필드에 포커스
+            setTimeout(() => {
+                teacherInput.focus();
+            }, 100);
+
+            // 엔터 키 이벤트 리스너 추가
+            teacherInput.addEventListener('keypress', function (e) {
+                if (e.key === 'Enter') {
+                    saveTeacher();
+                }
+            });
+        }
+
+        /**
+         * 직원명 모달 닫기 함수
+         */
+        function closeTeacherModal() {
+            const modal = document.getElementById('teacherModal');
+            modal.style.display = 'none';
+
+            // 엔터 키 이벤트 리스너 제거
+            const teacherInput = document.getElementById('teacherInput');
+            teacherInput.removeEventListener('keypress', function (e) {
+                if (e.key === 'Enter') {
+                    saveTeacher();
+                }
+            });
+        }
+
+        /**
+         * 직원명 저장 함수
+         */
+        function saveTeacher() {
+            if (!currentTeacherCell) return;
+
+            const teacherInput = document.getElementById('teacherInput');
+            const teacherName = teacherInput.value.trim();
+
+            // 직원명 이름 업데이트
+            currentTeacherCell.textContent = teacherName;
+
+            // 로컬 스토리지에 저장
+            saveDataToLocalStorage();
+
+            // 모달 닫기
+            closeTeacherModal();
+        }
+
+        /**
+         * 목표 및 과정 테이블 내용 셀 설정 함수
+         */
+        function setupContentCells() {
+            const contentCells = document.querySelectorAll('.editable-content');
+
+            contentCells.forEach((cell) => {
+                cell.addEventListener('click', function () {
+                    openContentModal(this);
+                });
+            });
+        }
+
+        /**
+         * 현재 선택된 내용 셀
+         */
+        let currentContentCell = null;
+
+        /**
+         * 내용 모달 열기 함수
+         * @param {HTMLElement} cell - 클릭된 셀 요소
+         */
+        function openContentModal(cell) {
+            const modal = document.getElementById('contentModal');
+            const modalTitle = document.getElementById('contentModalTitle');
+            const contentInput = document.getElementById('contentInput');
+
+            currentContentCell = cell;
+
+            // 모달 제목 설정
+            const cellId = cell.id;
+            if (cellId.startsWith('goal-content')) {
+                modalTitle.textContent = `목표 내용 입력 (${cellId.split('-')[2]}번)`;
+            } else if (cellId.startsWith('process-content')) {
+                modalTitle.textContent = `과정 내용 입력 (${cellId.split('-')[2]}번)`;
+            } else {
+                modalTitle.textContent = '내용 입력';
+            }
+
+            // 현재 값 입력 필드에 설정
+            contentInput.value = cell.textContent || '';
+
+            // 모달 표시
+            modal.style.display = 'block';
+
+            // 입력 필드에 포커스
+            setTimeout(() => {
+                contentInput.focus();
+            }, 100);
+
+            // 엔터 키 이벤트 리스너 추가 (Ctrl+Enter로 저장)
+            contentInput.addEventListener('keydown', function (e) {
+                if (e.ctrlKey && e.key === 'Enter') {
+                    saveContent();
+                }
+            });
+        }
+
+        /**
+         * 내용 모달 닫기 함수
+         */
+        function closeContentModal() {
+            const modal = document.getElementById('contentModal');
+            modal.style.display = 'none';
+
+            // 엔터 키 이벤트 리스너 제거
+            const contentInput = document.getElementById('contentInput');
+            contentInput.removeEventListener('keydown', function (e) {
+                if (e.ctrlKey && e.key === 'Enter') {
+                    saveContent();
+                }
+            });
+        }
+
+        /**
+         * 내용 저장 함수
+         */
+        function saveContent() {
+            if (!currentContentCell) return;
+
+            const contentInput = document.getElementById('contentInput');
+            const content = contentInput.value.trim();
+
+            // 내용 업데이트
+            currentContentCell.textContent = content;
+
+            // 로컬 스토리지에 저장
+            saveDataToLocalStorage();
+
+            // 모달 닫기
+            closeContentModal();
+        }
+
+        /**
+         * 데이터를 로컬 스토리지에 저장하는 함수
+         */
+        function saveDataToLocalStorage() {
+            try {
+                // 작성자 테이블 데이터 저장
+                const teacherTable = document.getElementById('teacher-table');
+                const teacherCells = teacherTable.querySelectorAll('tbody td');
+                const teacherData = Array.from(teacherCells).map(cell => cell.textContent);
+
+                // 목표 및 과정 테이블 데이터 저장
+                const goalContentCells = document.querySelectorAll('[id^="goal-content-"]');
+                const processContentCells = document.querySelectorAll('[id^="process-content-"]');
+
+                const goalData = Array.from(goalContentCells).map(cell => ({
+                    id: cell.id,
+                    content: cell.textContent
+                }));
+
+                const processData = Array.from(processContentCells).map(cell => ({
+                    id: cell.id,
+                    content: cell.textContent
+                }));
+
+                // 데이터 객체 생성
+                const savedData = {
+                    teachers: teacherData,
+                    goals: goalData,
+                    processes: processData,
+                    lastSaved: new Date().toISOString()
+                };
+
+                // 로컬 스토리지에 저장
+                localStorage.setItem('reportData', JSON.stringify(savedData));
+
+                console.log('데이터가 로컬 스토리지에 저장되었습니다.');
+            } catch (error) {
+                console.error('데이터 저장 중 오류 발생:', error);
+            }
+        }
+
+        /**
+         * 로컬 스토리지에서 데이터를 불러오는 함수
+         */
+        function loadSavedData() {
+            try {
+                const savedDataString = localStorage.getItem('reportData');
+                if (!savedDataString) {
+                    console.log('저장된 데이터가 없습니다.');
+                    return;
+                }
+
+                const savedData = JSON.parse(savedDataString);
+
+                // 교사 데이터 복원
+                savedData.teachers.forEach(item => {
+                    const cell = document.getElementById(item.id);
+                    if (cell) cell.textContent = item.content;
+                });
+
+                // 목표 데이터 복원
+                savedData.goals.forEach(item => {
+                    const cell = document.getElementById(item.id);
+                    if (cell) cell.textContent = item.content;
+                });
+
+                // 과정 데이터 복원
+                savedData.processes.forEach(item => {
+                    const cell = document.getElementById(item.id);
+                    if (cell) cell.textContent = item.content;
+                });
+
+                console.log('저장된 데이터를 불러왔습니다. 마지막 저장 시간:', new Date(savedData.lastSaved).toLocaleString());
+            } catch (error) {
+                console.error('데이터 불러오기 중 오류 발생:', error);
+            }
+        }
+
+        /**
+         * Report Entry 토글 기능
+         */
+        document.addEventListener('DOMContentLoaded', function () {
+            const reportInfoHeader = document.getElementById('reportInfoHeader');
+            const reportEntryContent = document.getElementById('reportEntryContent');
+
+            // 초기 상태 설정 (기본적으로 펼쳐진 상태)
+            let isCollapsed = false;
+
+            // 클릭 이벤트 리스너 추가
+            reportInfoHeader.addEventListener('click', function () {
+                isCollapsed = !isCollapsed;
+
+                if (isCollapsed) {
+                    reportInfoHeader.classList.add('collapsed');
+                    reportEntryContent.classList.add('collapsed');
+                } else {
+                    reportInfoHeader.classList.remove('collapsed');
+                    reportEntryContent.classList.remove('collapsed');
+                }
+            });
+        });
+
+        /**
+         * 날짜를 "yyyymmdd" 형식으로 변환하는 함수
+         * @param {string} dateStr - "yyyy-mm-dd" 형식의 날짜 문자열
+         * @returns {string} - "yyyymmdd" 형식의 날짜 문자열
+         */
+        function formatDateToYYYYMMDD(dateStr) {
+            if (!dateStr) return '';
+            return dateStr.replace(/-/g, '');
+        }
+    </script>
+
+    <!-- 커스텀 알림 모달 -->
+    <div id="customAlert" class="custom-alert">
+        <div class="custom-alert-content">
+            <div class="custom-alert-header">
+                <i class="fas fa-exclamation-circle"></i>
+                <span id="alertTitle">알림</span>
+                <button class="close-alert" onclick="closeAlert()">&times;</button>
+            </div>
+            <div class="custom-alert-body" id="alertMessage">
+                메시지가 여기에 표시됩니다.
+            </div>
+            <div class="custom-alert-footer">
+                <button class="alert-confirm-btn" onclick="closeAlert()"><i class="fas fa-check"></i> 확인</button>
+            </div>
+        </div>
+    </div>
+</body>
+
+</html>
