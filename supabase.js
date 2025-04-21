@@ -5,6 +5,7 @@ const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZS
 // Supabase 클라이언트 초기화
 const client = supabase.createClient(supabaseUrl, supabaseKey);
 
+window.supabase = client;
 
 
 // 함수를 전역 객체에 할당하여 export (window에 속성으로 노출)
